@@ -61,6 +61,7 @@ function login(event) {
             },
         };
         client.name = name;
+        document.querySelector("#login-name").innerHTML = name;
         socket.send(JSON.stringify(data));
         showPageMain();
     }
