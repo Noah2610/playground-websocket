@@ -52,7 +52,7 @@ function login(event) {
     const formEl = event.target;
     const nameEl = formEl.querySelector('input[name="name"]');
     const name = nameEl.value;
-    if (socket && client && name && !name.match(/^\s*$/)) {
+    if (socket && client && name && !isBlank(name)) {
         const data = {
             type: "login",
             payload: {
@@ -82,11 +82,18 @@ function handleIncomingData(data) {
         case "message":
             const name = data.payload.client.name;
             const message = data.payload.message;
-            console.log(`<${name}> ${message}`);
+            addMessage(`<${name}> ${message}`);
             break;
         default:
             console.error(`Received unknown data type: ${data.type}`, data);
     }
+}
+
+function addMessage(message) {
+    const messagesEl = document.querySelector("#message-log");
+    const messageEl = document.createElement("div");
+    messageEl.innerText = message;
+    messagesEl.appendChild(messageEl);
 }
 
 function sendMessage(event) {
@@ -96,7 +103,9 @@ function sendMessage(event) {
     const messageEl = formEl.querySelector('input[name="message"]');
     const message = messageEl.value;
 
-    if (socket) {
+    messageEl.value = "";
+
+    if (socket && !isBlank(message)) {
         const data = {
             type: "message",
             payload: {
@@ -106,6 +115,10 @@ function sendMessage(event) {
         };
         socket.send(JSON.stringify(data));
     }
+}
+
+function isBlank(s) {
+    return !!s.match(/^\s*$/);
 }
 
 window.onload = main;
