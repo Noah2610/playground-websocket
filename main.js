@@ -1,14 +1,12 @@
 const SOCKET_URL = `ws://${location.hostname}:8090`;
 
+let currentPage = null;
 let socket = null;
 let client = null;
 
 function main() {
-    const connectBtnEl = document.querySelector("button#ws-connect");
-    connectBtnEl.onclick = wsConnect;
-
-    const sendMessageFormEl = document.querySelector("form#send-message");
-    sendMessageFormEl.onsubmit = sendMessage;
+    wsConnect();
+    showPageLogin();
 }
 
 function wsConnect() {
@@ -33,6 +31,47 @@ function wsConnect() {
     });
 }
 
+function showPage(page) {
+    currentPage = page;
+    document
+        .querySelectorAll(".page")
+        .forEach((pageEl) => pageEl.classList.add("hidden"));
+    document
+        .querySelector(`.page[data-page="${page}"]`)
+        .classList.remove("hidden");
+}
+
+function showPageLogin() {
+    showPage("login");
+    const loginFormEl = document.querySelector("#login");
+    loginFormEl.onsubmit = login;
+}
+
+function login(event) {
+    event.preventDefault();
+    const formEl = event.target;
+    const nameEl = formEl.querySelector('input[name="name"]');
+    const name = nameEl.value;
+    if (socket && client && name && !name.match(/^\s*$/)) {
+        const data = {
+            type: "login",
+            payload: {
+                clientId: client.id,
+                name: name,
+            },
+        };
+        client.name = name;
+        socket.send(JSON.stringify(data));
+        showPageMain();
+    }
+}
+
+function showPageMain() {
+    showPage("main");
+    const sendMessageFormEl = document.querySelector("form#send-message");
+    sendMessageFormEl.onsubmit = sendMessage;
+}
+
 function handleIncomingData(data) {
     switch (data.type) {
         case "new-client":
@@ -41,7 +80,9 @@ function handleIncomingData(data) {
             };
             break;
         case "message":
-            console.log(`${data.payload.client.id}> ${data.payload.message}`);
+            const name = data.payload.client.name;
+            const message = data.payload.message;
+            console.log(`<${name}> ${message}`);
             break;
         default:
             console.error(`Received unknown data type: ${data.type}`, data);

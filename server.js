@@ -26,16 +26,23 @@ function startWebsocket() {
         const client = {
             id,
             socket,
+            name: null,
         };
         connectedClients.push(client);
         return client;
     }
 
-    function sendMessage(message) {
+    function sendMessage(fromClient, message) {
         for (const client of connectedClients) {
             const data = {
                 type: "message",
-                payload: message,
+                payload: {
+                    client: {
+                        id: fromClient.id,
+                        name: fromClient.name,
+                    },
+                    message,
+                },
             };
             client.socket.send(JSON.stringify(data));
         }
@@ -59,14 +66,30 @@ function startWebsocket() {
         socket.on("message", (dataRaw) => {
             const data = JSON.parse(dataRaw);
             switch (data.type) {
-                case "message":
-                    sendMessage(data.payload);
+                case "message": {
+                    const client = connectedClients.find(
+                        (checkClient) =>
+                            checkClient.id === data.payload.client.id
+                    );
+                    sendMessage(client, data.payload.message);
                     break;
-                default:
+                }
+                case "login": {
+                    const { clientId, name } = data.payload;
+                    const client = connectedClients.find(
+                        (checkClient) => checkClient.id === clientId
+                    );
+                    if (client) {
+                        client.name = name;
+                    }
+                    break;
+                }
+                default: {
                     console.error(
                         `Received unknown message type: ${data.type}`,
                         data
                     );
+                }
             }
         });
     });

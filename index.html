@@ -3,18 +3,33 @@
     <head>
         <meta charset="UTF-8" />
         <title>Playing with JS WebSockets</title>
+
+        <style>
+            .hidden {
+                display: none;
+            }
+        </style>
     </head>
     <body>
-        <button id="ws-connect">Connect to WebSocket</button>
+        <div class="page hidden" data-page="login">
+            <h2>Login</h2>
+            <form id="login">
+                <input name="name" type="text" placeholder="Name..." />
+                <input type="submit" value="Login With Name" />
+            </form>
+        </div>
 
-        <form id="send-message">
-            <input
-                name="message"
-                type="text"
-                placeholder="Send a message to all connected clients..."
-            />
-            <input type="submit" value="Send Message" />
-        </form>
+        <div class="page hidden" data-page="main">
+            <h2>Main</h2>
+            <form id="send-message">
+                <input
+                    name="message"
+                    type="text"
+                    placeholder="Send a message to all connected clients..."
+                />
+                <input type="submit" value="Send Message" />
+            </form>
+        </div>
 
         <script type="text/javascript" src="./main.js"></script>
     </body>
